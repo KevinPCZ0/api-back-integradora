@@ -1,0 +1,127 @@
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Status {
+  ENTREGADO
+  ENTREGADO_MANANA
+  PENDIENTE
+  ENTREGAR_DIA
+  NO_ENTREGADO
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  name     String @db.VarChar(50)
+  email    String @unique() @db.VarChar(150)
+  password String @db.VarChar(150)
+
+  goodsEntries     GoodsEntry[]
+  goodsExits       GoodsExit[]
+  transferProducts TransferProduct[]
+}
+
+model Product {
+  id          Int     @id @default(autoincrement()) @db.Integer
+  name        String  @db.VarChar(255)
+  brand       String  @db.VarChar(255)
+  model       String  @db.VarChar(255)
+  description String  @db.VarChar(255)
+  category    String  @db.VarChar(255)
+  stock       Int     @db.Integer
+  productCode Int     @db.Integer
+  status      Status?
+  isActive    Boolean @default(true)
+
+  branchId    Int?
+  branch      Branch? @relation(fields: [branchId], references: [id])
+
+  goodsEntries     GoodsEntry[]
+  goodsExits       GoodsExit[]
+  transferProducts TransferProduct[]
+
+  @@unique([name, brand, model, productCode])
+}
+
+model GoodsEntry {
+  id          Int      @id @default(autoincrement()) @db.Integer
+  date        DateTime @db.Timestamp(3)
+  quantity    Int      @db.Integer
+  color       String   @db.VarChar(50)
+  folio       String   @db.VarChar(100)
+  observation String   @db.VarChar(255)
+  origin      String   @db.VarChar(100)
+  driver      String   @db.VarChar(100)
+  assistant   String   @db.VarChar(100)
+  reciveBy    String   @db.VarChar(100)
+  entryTime   DateTime @db.Timestamp(3)
+
+  productId   Int
+  product     Product @relation(fields: [productId], references: [id])
+  userId      Int
+  user        User    @relation(fields: [userId], references: [id])
+}
+
+model GoodsExit {
+  id          Int      @id @default(autoincrement()) @db.Integer
+  date        DateTime @db.Date
+  quantity    Int      @db.Integer
+  color       String   @db.VarChar(50)
+  saleNumber  String   @db.VarChar(100)
+  paymentType String   @db.VarChar(100)
+  location    String   @db.VarChar(100)
+  driver      String   @db.VarChar(100)
+  assistant   String   @db.VarChar(100)
+  deliveredBy String   @db.VarChar(100)
+  exitTime    DateTime @db.Date
+
+  productId   Int
+  product     Product @relation(fields: [productId], references: [id])
+  userId      Int
+  user        User    @relation(fields: [userId], references: [id])
+  freightID   Int
+  freight     Freight @relation(fields: [freightID], references: [id])
+}
+
+model TransferProduct {
+  id           Int      @id @default(autoincrement()) @db.Integer
+  date         DateTime @db.Timestamp(3)
+  folio        String   @db.VarChar(100)
+  observations String   @db.VarChar(255)
+  driver       String   @db.VarChar(100)
+  assistant    String   @db.VarChar(100)
+  receivedBy   String   @db.VarChar(100)
+
+  productId    Int
+  product      Product @relation(fields: [productId], references: [id])
+  userId       Int
+  user         User    @relation(fields: [userId], references: [id])
+  fromBranchId Int
+  fromBranch   Branch  @relation("FromBranch", fields: [fromBranchId], references: [id])
+  toBranchId   Int
+  toBranch     Branch  @relation("ToBranch", fields: [toBranchId], references: [id])
+}
+
+model Freight {
+  id    Int    @id @default(autoincrement()) @db.Integer
+  city  String @db.VarChar(100)
+  price Float
+
+  goodsExits GoodsExit[]
+}
+
+model Branch {
+  id     Int    @id @default(autoincrement()) @db.Integer
+  name   String @db.VarChar(100)
+  adress String @db.VarChar(100)
+
+  products             Product[]
+  transferProductsFrom TransferProduct[] @relation("FromBranch")
+  transferProductsTo   TransferProduct[] @relation("ToBranch")
+}
