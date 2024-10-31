@@ -26,6 +26,7 @@ import { FreightModule } from "./config/freight.module";
     BranchModule,
     TransferProductModule,
     FreightModule,
+
   ],
 })
 export class AppModule {}

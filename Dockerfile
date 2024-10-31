@@ -13,13 +13,15 @@ RUN npm install
 # Copia el resto del código al contenedor
 COPY . .
 
+
+#Genrar el resto del código al contenedor
 RUN npx prisma generate
 
-# Compila la aplicación
-RUN npm run build
+
 
 # Expone el puerto que usará la aplicación
 EXPOSE 3000
 
 # Comando por defecto para ejecutar la aplicación
 CMD ["npm", "run", "start"]
+

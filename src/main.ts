@@ -2,17 +2,20 @@ import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { ValidationPipe } from "./application/pipes/validation.pipe";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
-
+import * as cors from 'cors';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(new ValidationPipe());
-  
-  // Configuración CORS
-  app.enableCors({
-    origin: /^http:\/\/localhost:\d+$/,
-    methods: "GET,POST,PUT,DELETE",
-    credentials: true,
-  });
+  //cors dando acceso a todo 
+  app.use(
+    cors({
+      origin: '*', 
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+      credentials: true,
+    }),
+  );
+
   const config = new DocumentBuilder()
   .setTitle('Integradora API')
   .setDescription('Aplicación de gestion de Inventario')
